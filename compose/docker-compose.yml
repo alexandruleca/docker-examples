@@ -1,0 +1,57 @@
+version: "3.7"
+
+networks:
+  application-network:
+    ipam:
+      config:
+        - subnet: 172.16.1.0/24
+
+volumes:
+  mysql_persistent_storage:
+    external: true
+
+services:
+  mysql:
+    image: 'mysql:5.7'
+    container_name: mysql
+    ports:
+      - '3307:3306'
+    networks:
+      application-network:
+        ipv4_address: 172.16.1.2
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: qweruiop
+      MYSQL_DATABASE: application_db
+    volumes:
+      - mysql_persistent_storage:/var/lib/mysql
+  backend:
+    build:
+      dockerfile: backend/Dockerfile
+      context: ./
+    container_name: api
+    depends_on:
+      - mysql
+    networks:
+      application-network:
+        ipv4_address: 172.16.1.3
+    ports:
+      - '8081:3000'
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASS: qweruiop
+      MYSQL_DB: application_db
+      MYSQL_HOST: 172.16.1.2
+      MYSQL_PORT: 3307
+
+  frontend:
+    build:
+      dockerfile: frontend/Dockerfile
+    container_name: frontend
+    depends_on:
+      - backend
+    networks:
+      application-network:
+        ipv4_address: 172.16.1.4
+    ports:
+      - '8080:3000'
