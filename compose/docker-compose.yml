@@ -2,6 +2,7 @@ version: "3.7"
 
 networks:
   application-network:
+    driver: bridge
     ipam:
       config:
         - subnet: 172.16.1.0/24
@@ -27,8 +28,8 @@ services:
       - mysql_persistent_storage:/var/lib/mysql
   backend:
     build:
-      dockerfile: backend/Dockerfile
-      context: ./
+      dockerfile: Dockerfile
+      context: ./backend
     container_name: api
     depends_on:
       - mysql
@@ -46,7 +47,8 @@ services:
 
   frontend:
     build:
-      dockerfile: frontend/Dockerfile
+      dockerfile: Dockerfile
+      context: ./frontend
     container_name: frontend
     depends_on:
       - backend
